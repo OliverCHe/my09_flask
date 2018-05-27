@@ -31,7 +31,7 @@ class NewsCategory(db.Model, BaseModel):
     news = db.relationship('NewsInfo', backref='category', lazy='danamic')
 
 
-class UserComment(db.Model, BaseModel):
+class NewsComment(db.Model, BaseModel):
     __tablename__ = 'user_comment'
     id = db.Column(db.Integer, primary_key=True)
     news_id = db.Column(db.Integer, db.ForeignKey('news_info.id'))
@@ -43,7 +43,7 @@ class UserComment(db.Model, BaseModel):
 
     user = db.relationship('UserInfo', backref='user', lazy='danamic')
 
-    comments = db.relationship('UserComment', lazy='danamic')
+    comments = db.relationship('NewsComment', lazy='danamic')
 
 
 class NewsInfo(db.Model, BaseModel):
@@ -59,7 +59,7 @@ class NewsInfo(db.Model, BaseModel):
     varify_status = db.Column(db.SmallInteger, default=1)
     refuse_reason = db.Column(db.String(128), default='')
 
-    comments = db.relationship('UserComment', backref='news', lazy='danamic', order_by='UserComment.id.desc()')
+    comments = db.relationship('NewsComment', backref='news', lazy='danamic', order_by='NewsComment.id.desc()')
 
 
 class UserInfo(db.Model,BaseModel):
@@ -77,7 +77,7 @@ class UserInfo(db.Model,BaseModel):
 
     news = db.relationship('NewsInfo', backref='user', lazy='danamic')
 
-    comments = db.relationship('UserComment', backref='user', lazy='danamic')
+    comments = db.relationship('NewsComment', backref='user', lazy='danamic')
 
     # 用户收藏了什么新闻
     news_collect = db.relationship(
@@ -106,5 +106,5 @@ class UserInfo(db.Model,BaseModel):
         self.password_hash = generate_password_hash(pwd)
 
 
-    def checkpwd(self, pwd):
+    def check_pwd(self, pwd):
         return check_password_hash(self.password_hash, pwd)
