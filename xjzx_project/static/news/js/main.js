@@ -8,7 +8,7 @@ $(function(){
 	// 点击关闭按钮关闭登录框或者注册框
 	$('.shutoff').click(function(){
 		$(this).closest('form').hide();
-	})
+	});
 
     // 隐藏错误
     $(".login_form #mobile").focus(function(){
@@ -20,7 +20,9 @@ $(function(){
 
     $(".register_form #mobile").focus(function(){
         $("#register-mobile-err").hide();
+        $("#register-mobile-err1").hide();
     });
+
     $(".register_form #imagecode").focus(function(){
         $("#register-image-code-err").hide();
     });
@@ -29,6 +31,16 @@ $(function(){
     });
     $(".register_form #password").focus(function(){
         $("#register-password-err").hide();
+    });
+
+    $(".register_form #mobile").blur(function () {
+        $.get("/user/mobile",{
+            "mobile": $("#register_mobile").val()
+        }, function (data) {
+            if(data.result == 1){
+                $("#login-mobile-err1").show();
+            }
+        })
     });
 
 
@@ -206,6 +218,7 @@ $(function(){
         });
 
     });
+
     $("#logout").click(function () {
         $.post("/user/logout", {
             "csrf_token": $("#csrf_token").val()
@@ -215,7 +228,8 @@ $(function(){
                 $(".user_login").hide();
             }
         })
-    })
+    });
+
 });
 
 var imageCodeId = "";

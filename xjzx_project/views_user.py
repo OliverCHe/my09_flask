@@ -46,6 +46,13 @@ def smscode():
         return jsonify(result=1)
 
 
+@user_blueprint.route('/mobile')
+def mobile():
+    if not UserInfo.query.filter_by(mobile=mobile).first():
+        return jsonify(result=1)
+
+
+
 @user_blueprint.route('/register', methods=['POST'])
 def register():
     reg_dict = request.form
