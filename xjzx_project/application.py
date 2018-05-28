@@ -2,14 +2,16 @@ from flask import Flask
 from views_news import news_blueprint
 from views_user import user_blueprint
 from views_admin import admin_blueprint
+from flask_wtf import CSRFProtect
 # 引入python自带的日志包
 import logging
 from logging.handlers import RotatingFileHandler
 
-
 def create_app(Config):
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    CSRFProtect(app)
 
     app.register_blueprint(news_blueprint)
     app.register_blueprint(user_blueprint)

@@ -93,9 +93,10 @@ $(function(){
 
     // TODO 登录表单提交
     $(".login_form_con").submit(function (e) {
-        e.preventDefault()
-        var mobile = $(".login_form #mobile").val()
-        var password = $(".login_form #password").val()
+        e.preventDefault();
+        var mobile = $(".login_form #mobile").val();
+        var password = $(".login_form #password").val();
+        var csrf_token = $("#csrf_token").val();
 
         if (!mobile) {
             $("#login-mobile-err").show();
@@ -108,18 +109,45 @@ $(function(){
         }
 
         // 发起登录请求
-    })
+        $.post("/user/login", {
+            "mobile": mobile,
+            "password": password,
+            "csrf_token": csrf_token
+        }, function (data) {
+            if (data.result == 3){
+                $(".user_btns").hide();
+                $(".user_login").show();
+                $(".login_form_con").hide();
+                $(".lgin_pic").attr("src", "/static/news/images/" + data.portrait);
+                $("#login_name").text(data.nick_name);
+            }
+            else if(data.result == 2){
+                alert("没有该用户")
+            }
+            else if(data.result == 4){
+                alert("密码错误")
+            }
+        })
+    });
 
 
     // TODO 注册按钮点击
     $(".register_form_con").submit(function (e) {
         // 阻止默认提交操作
-        e.preventDefault()
+        e.preventDefault();
 
 		// 取到用户输入的内容
-        var mobile = $("#register_mobile").val()
-        var smscode = $("#smscode").val()
-        var password = $("#register_password").val()
+        var mobile = $("#register_mobile").val();
+        var smscode = $("#smscode").val();
+        var password = $("#register_password").val();
+        var imageCode = $("#imagecode").val();
+        var csrf_token = $("#csrf_token").val();
+
+        if (!imageCode) {
+            $("#image-code-err").html("请填写验证码！");
+            $("#image-code-err").show();
+            return;
+        }
 
 		if (!mobile) {
             $("#register-mobile-err").show();
@@ -142,15 +170,60 @@ $(function(){
         }
 
         // 发起注册请求
+        $.post("/user/register", {
+            "mobile": mobile,
+            "image_code": imageCode,
+            "sms_code": smscode,
+            "password": password,
+            "csrf_token": csrf_token
+        }, function (data) {
+            if(data.result == 1){
+                alert("信息不完整");
+            }
+            else if(data.result == 2){
+                alert("图片验证失败");
+            }
+            else if(data.result == 3){
+                alert("短信验证失败");
+            }
+            else if(data.result == 4){
+                alert("密码格式有误，需要是字母数字下划线，6-20位之间");
+            }
+            else if(data.result == 5){
+                alert("该手机号已被注册");
+            }
+            else if(data.result == 6){
+                alert("服务器发生异常");
+            }
+            else if(data.result == 7){
+                $("#register_mobile").val('');
+                $("#smscode").val('');
+                $("#register_password").val('');
+                $("#imagecode").val('');
 
+                $('.to_login').click('');
+            }
+        });
+
+    });
+    $("#logout").click(function () {
+        $.post("/user/logout", {
+            "csrf_token": $("#csrf_token").val()
+        }, function (data) {
+            if (data.result == 1){
+                $(".user_btns").show();
+                $(".user_login").hide();
+            }
+        })
     })
-})
+});
 
-var imageCodeId = ""
+var imageCodeId = "";
 
 // TODO 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
 function generateImageCode() {
-
+    str = $('.get_pic_code').attr('src')
+    $('.get_pic_code').attr('src', str + 1)
 }
 
 // 发送短信验证码
@@ -173,7 +246,22 @@ function sendSMSCode() {
     }
 
     // TODO 发送短信验证码
+    $.get('/user/smscode', {
+        "mobile":mobile,
+        "image_code":imageCode
+    },function (data) {
+        if(data.result == 2){
+            alert('图片验证码有误');
+            $(".get_code").attr("onclick", "sendSMSCode();");
+            }
+        else if(data.result == 3){
+            alert('网络异常，发送短信验证码失败');
+            $(".get_code").attr("onclick", "sendSMSCode();");
+        }
+
+    })
 }
+
 
 // 调用该函数模拟点击左侧按钮
 function fnChangeMenu(n) {

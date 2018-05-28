@@ -1,8 +1,8 @@
 """初始化
 
-Revision ID: 70afdead0cd3
+Revision ID: f5a61e0480e4
 Revises: 
-Create Date: 2018-05-27 09:49:18.611272
+Create Date: 2018-05-28 10:02:43.638700
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '70afdead0cd3'
+revision = 'f5a61e0480e4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -61,11 +61,11 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('tb_user_follow',
-    sa.Column('follow_user_id', sa.Integer(), nullable=False),
+    sa.Column('origin_user_id', sa.Integer(), nullable=False),
     sa.Column('follow_by_user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['follow_by_user_id'], ['user_info.id'], ),
-    sa.ForeignKeyConstraint(['follow_user_id'], ['user_info.id'], ),
-    sa.PrimaryKeyConstraint('follow_user_id', 'follow_by_user_id')
+    sa.ForeignKeyConstraint(['origin_user_id'], ['user_info.id'], ),
+    sa.PrimaryKeyConstraint('origin_user_id', 'follow_by_user_id')
     )
     op.create_table('tb_user_news',
     sa.Column('user_id', sa.Integer(), nullable=False),

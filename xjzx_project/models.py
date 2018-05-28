@@ -15,12 +15,17 @@ class BaseModel(object):
 
 
 tb_news_collect = db.Table('tb_user_news',
-                           db.Column('user_id', db.Integer, db.ForeignKey('user_info.id'), primary_key=True),
-                           db.Column('news_id', db.Integer, db.ForeignKey('news_info.id'),primary_key=True))
+                           db.Column('user_id', db.Integer, db.ForeignKey('user_info.id'),primary_key=True),
+                           db.Column('news_id', db.Integer, db.ForeignKey('news_info.id'),primary_key=True)
+                           )
 
-tb_user_follow = db.Table('tb_user_follow',
-                          db.Column('follow_user_id', db.Integer, db.ForeignKey('user_info.id'), primary_key=True),
-                          db.Column('follow_by_user_id', db.Integer, db.ForeignKey('user_info.id'), primary_key=True))
+tb_user_follow = db.Table(
+    'tb_user_follow',#用户origin_user_id关注了用户follow_user_id
+    #原始用户编号
+    db.Column('origin_user_id', db.Integer, db.ForeignKey('user_info.id'), primary_key=True),
+    #被关注用户编号
+    db.Column('follow_user_id', db.Integer, db.ForeignKey('user_info.id'), primary_key=True)
+)
 
 
 class NewsCategory(db.Model, BaseModel):
@@ -28,7 +33,7 @@ class NewsCategory(db.Model, BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     type_name = db.Column(db.String(16))
 
-    news = db.relationship('NewsInfo', backref='category', lazy='danamic')
+    news = db.relationship('NewsInfo', backref='category', lazy='dynamic')
 
 
 class NewsComment(db.Model, BaseModel):
@@ -40,10 +45,7 @@ class NewsComment(db.Model, BaseModel):
     nice_count = db.Column(db.Integer, default=0)
     comment_id = db.Column(db.Integer, db.ForeignKey('user_comment.id'))
 
-
-    user = db.relationship('UserInfo', backref='user', lazy='danamic')
-
-    comments = db.relationship('NewsComment', lazy='danamic')
+    comments = db.relationship('NewsComment', lazy='dynamic')
 
 
 class NewsInfo(db.Model, BaseModel):
@@ -59,7 +61,7 @@ class NewsInfo(db.Model, BaseModel):
     varify_status = db.Column(db.SmallInteger, default=1)
     refuse_reason = db.Column(db.String(128), default='')
 
-    comments = db.relationship('NewsComment', backref='news', lazy='danamic', order_by='NewsComment.id.desc()')
+    comments = db.relationship('NewsComment', backref='news', lazy='dynamic', order_by='NewsComment.id.desc()')
 
 
 class UserInfo(db.Model,BaseModel):
@@ -75,25 +77,27 @@ class UserInfo(db.Model,BaseModel):
     gender = db.Column(db.Boolean, default=False)
     isAdmin = db.Column(db.Boolean, default=False)
 
-    news = db.relationship('NewsInfo', backref='user', lazy='danamic')
+    news = db.relationship('NewsInfo', backref='user', lazy='dynamic')
 
-    comments = db.relationship('NewsComment', backref='user', lazy='danamic')
+    comments = db.relationship('NewsComment', backref='user', lazy='dynamic')
 
     # 用户收藏了什么新闻
     news_collect = db.relationship(
         'NewsInfo',
         secondary = tb_news_collect,
-        lazy='danamic'
+        lazy='dynamic'
     )
 
     # 用户关注的人
-    follow_user_id = db.relationship(
+    follow_user = db.relationship(
         'UserInfo',
         secondary=tb_user_follow,
-        primaryjoin= (db == tb_user_follow.c.follow_user_id),
-        secondaryjoin= (db == tb_user_follow.c.follow_by_user_id),
-        backref=db.backref('follow_by_user_id', lazy='danamic')
+        lazy='dynamic',
+        primaryjoin= (id == tb_user_follow.c.origin_user_id),
+        secondaryjoin= (id == tb_user_follow.c.follow_user_id),
+        backref=db.backref('follow_by_user', lazy='dynamic')
     )
+
 
 
     @property
