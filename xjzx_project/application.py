@@ -11,6 +11,7 @@ def create_app(Config):
     app = Flask(__name__)
     app.config.from_object(Config)
 
+
     CSRFProtect(app)
 
     app.register_blueprint(news_blueprint)
