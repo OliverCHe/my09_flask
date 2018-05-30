@@ -20,7 +20,7 @@ $(function(){
 
     $(".register_form #mobile").focus(function(){
         $("#register-mobile-err").hide();
-        $("#register-mobile-err1").hide();
+        // $("#register-mobile-err1").hide();
     });
 
     $(".register_form #imagecode").focus(function(){
@@ -33,15 +33,15 @@ $(function(){
         $("#register-password-err").hide();
     });
 
-    $(".register_form #mobile").blur(function () {
-        $.get("/user/mobile",{
-            "mobile": $("#register_mobile").val()
-        }, function (data) {
-            if(data.result == 1){
-                $("#login-mobile-err1").show();
-            }
-        })
-    });
+    // $(".register_form #mobile").blur(function () {
+    //     $.get("/user/mobile",{
+    //         "mobile": $("#register_mobile").val()
+    //     }, function (data) {
+    //         if(data.result == 1){
+    //             $("#login-mobile-err1").show();
+    //         }
+    //     })
+    // });
 
 
 	// 点击输入框，提示文字上移
@@ -213,7 +213,7 @@ $(function(){
                 $("#register_password").val('');
                 $("#imagecode").val('');
 
-                $('.to_login').click('');
+                $('.to_login').click();
             }
         });
 

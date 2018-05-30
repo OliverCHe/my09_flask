@@ -1,3 +1,4 @@
+from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import pymysql
@@ -69,7 +70,7 @@ class UserInfo(db.Model,BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     portrait = db.Column(db.String(50), default='user_pic.png')
     nick_name = db.Column(db.String(20))
-    signature = db.Column(db.String(200))
+    signature = db.Column(db.String(200), default="这个人太懒了, 什么也没留下")
     public_count = db.Column(db.Integer, default=0)
     fans_count = db.Column(db.Integer, default=0)
     mobile = db.Column(db.String(11))
@@ -112,3 +113,8 @@ class UserInfo(db.Model,BaseModel):
 
     def check_pwd(self, pwd):
         return check_password_hash(self.password_hash, pwd)
+
+
+    @property
+    def portrait_url(self):
+        return current_app.config.get("QINIU_URL") + self.portrait

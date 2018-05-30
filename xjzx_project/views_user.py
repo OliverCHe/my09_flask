@@ -1,7 +1,7 @@
 import random
 
 import re
-from flask import Blueprint, render_template, session, make_response, jsonify
+from flask import Blueprint, render_template, session, make_response, jsonify, redirect
 from flask import current_app
 from flask import request
 
@@ -9,6 +9,10 @@ from utile.captcha.captcha import captcha
 from utile.ytx_sdk.ytx_send import sendTemplateSMS
 
 from models import UserInfo, db
+
+import functools
+from utile.qiniu_xjzx import upload_pic
+
 
 user_blueprint=Blueprint('user',__name__,url_prefix='/user')
 
@@ -84,8 +88,9 @@ def register():
     except:
         current_app.logger_xjzx.error('注册用户时数据库访问失败')
         return jsonify(result=6)
-    else:
-        return jsonify(result=7)
+
+
+    return jsonify(result=7)
 
 
 @user_blueprint.route('/login', methods=['POST'])
@@ -117,6 +122,105 @@ def logout():
     session.pop("user_id")
     return jsonify(result=1)
 
+
+# 验证user_id是否存在于session中
+def login_verify(view_func):
+    @functools.wraps(view_func)
+    def inner_func(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect("/")
+        return view_func(*args, **kwargs)
+    return inner_func
+
+
+
+@user_blueprint.route('/')
+@login_verify
+def index():
+    user_id = session.get("user_id")
+
+    user = UserInfo.query.get(user_id)
+
+    return render_template("news/user.html", user=user, title="用户中心")
+
+
+@user_blueprint.route('/user_base_info', methods=["GET", "POST"])
+@login_verify
+def user_base_info():
+    user_id = session.get("user_id")
+    user = UserInfo.query.get(user_id)
+    if request.method == "GET":
+        print("222222")
+        return render_template("news/user_base_info.html", user=user)
+    elif request.method == 'POST':
+        req_dict = request.form
+        signature = req_dict.get("signature")
+        nick_name = req_dict.get("nick_name")
+        gender = req_dict.get("gender")
+
+        print("11111111")
+        user.signature = signature
+        user.nick_name = nick_name
+        user.gender = True if gender == "True" else False
+
+        try:
+            db.session.commit()
+        except:
+            current_app.logger_xjzx.error("修改用户基本信息时连接数据库失败")
+            return jsonify(result=2)
+
+        return jsonify(result=1)
+
+
+
+@user_blueprint.route('/user_pic_info', methods=["GET", "POST"])
+@login_verify
+def user_pic_info():
+    user_id = session['user_id']
+    user = UserInfo.query.get(user_id)
+
+    if request.method == 'GET':
+        return render_template('news/user_pic_info.html', user=user)
+    elif request.method=='POST':
+        f1 = request.files.get("portrait")
+        f1_name = upload_pic(f1)
+        print(f1_name)
+        user.portrait = f1_name
+
+        db.session.commit()
+
+
+        return jsonify(result=1, portrait_url = user.portrait_url)
+
+
+@user_blueprint.route('/user_follow')
+@login_verify
+def user_follow():
+    return render_template("news/user_follow.html")
+
+
+@user_blueprint.route('/user_pass_info')
+@login_verify
+def user_pass_info():
+    return render_template("news/user_pass_info.html")
+
+
+@user_blueprint.route('/user_collection')
+@login_verify
+def user_collection():
+    return render_template("news/user_collection.html")
+
+
+@user_blueprint.route('/user_news_release')
+@login_verify
+def user_news_release():
+    return render_template("news/user_news_release.html")
+
+
+@user_blueprint.route('/user_news_list')
+@login_verify
+def user_news_list():
+    return render_template("news/user_news_list.html")
 
 
 
