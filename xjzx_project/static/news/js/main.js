@@ -224,6 +224,9 @@ $(function(){
             "csrf_token": $("#csrf_token").val()
         }, function (data) {
             if (data.result == 1){
+                if(location.pathname == "/user/"){
+                    location.href = "/"
+                }
                 $(".user_btns").show();
                 $(".user_login").hide();
             }

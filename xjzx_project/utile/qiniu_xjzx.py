@@ -14,6 +14,6 @@ def upload_pic(f1):
     token = q.upload_token(bucket_name)
     # 上传文件数据，ret是字典，键为hash、key，值为新文件名，info是response对象
     ret, info = put_data(token, None, f1.read())
-    print('33333333333333')
+    # print('33333333333333')
     # 返回七牛云给出的文件名
     return ret.get('key')

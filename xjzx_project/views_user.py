@@ -8,7 +8,7 @@ from flask import request
 from utile.captcha.captcha import captcha
 from utile.ytx_sdk.ytx_send import sendTemplateSMS
 
-from models import UserInfo, db
+from models import UserInfo, db, NewsInfo
 
 import functools
 from utile.qiniu_xjzx import upload_pic
@@ -38,7 +38,8 @@ def smscode():
         return jsonify(result=2)
 
     sms_code = random.randint(1000, 9999)
-    session['sms_code'] = sms_code
+    session['sms_code'] =  sms_code
+
 
     try:
         # sendTemplateSMS(mobile, [sms_code, "5"], 1)
@@ -196,31 +197,108 @@ def user_pic_info():
 @user_blueprint.route('/user_follow')
 @login_verify
 def user_follow():
-    return render_template("news/user_follow.html")
+    user_id = session.get("user_id")
+    user = UserInfo.query.get(user_id)
+
+    current_page = int(request.args.get("current_page", "1"))
+
+    follow_obj = user.follow_user.paginate(current_page, 4, False)
+
+    follow_list = follow_obj.items
+    total_page = follow_obj.pages
+
+    return render_template("news/user_follow.html",
+                           follow_list = follow_list,
+                           total_page = total_page,
+                           current_page = current_page
+                           )
 
 
-@user_blueprint.route('/user_pass_info')
+@user_blueprint.route('/user_pass_info', methods=["GET", "POST"])
 @login_verify
 def user_pass_info():
-    return render_template("news/user_pass_info.html")
+    if request.method == "GET":
+        return render_template("news/user_pass_info.html")
+    elif request.method == "POST":
+        dict1 = request.form
+        current_pwd = dict1.get("current_pwd")
+        new_pwd = dict1.get("new_pwd")
+        confirm_pwd = dict1.get("confirm_pwd")
+
+        if not all([current_pwd,new_pwd,confirm_pwd]):
+            return render_template("news/user_pass_info.html", error_tip="输入框不能有空")
+
+        if not re.match(r'[a-zA-Z0-9_]{6,20}', current_pwd):
+            return render_template("news/user_pass_info.html", error_tip="输入的旧密码有误")
+        elif not re.match(r'[a-zA-Z0-9_]{6,20}', new_pwd):
+            return render_template("news/user_pass_info.html", error_tip="输入的新密码格式有误")
+        elif new_pwd != confirm_pwd:
+            return render_template("news/user_pass_info.html", error_tip="两次输入的密码不一致")
+        else:
+            user_id = session.get("user_id")
+            user = UserInfo.query.get(user_id)
+
+            if not user.check_pwd(current_pwd):
+                return render_template("news/user_pass_info.html", error_tip="输入的旧密码有误")
+
+            user.password = new_pwd
+            db.session.commit()
+            return render_template("news/user_pass_info.html", error_tip="修改成功")
 
 
 @user_blueprint.route('/user_collection')
 @login_verify
 def user_collection():
-    return render_template("news/user_collection.html")
+    user_id = session.get("user_id")
+    user = UserInfo.query.get(user_id)
+
+    current_page = int(request.args.get("current_page", "1"))
+    # print(current_page)
+
+    paginate_obj = user.news_collect.order_by(NewsInfo.id.desc()).paginate(current_page, 6, False)
+
+    news_list = paginate_obj.items
+
+    total_page =paginate_obj.pages
+
+    return render_template("news/user_collection.html",
+                           news_list=news_list,
+                           total_page=total_page,
+                           current_page=current_page
+                           )
 
 
-@user_blueprint.route('/user_news_release')
+@user_blueprint.route('/user_news_release', methods=["GET", "POST"])
 @login_verify
 def user_news_release():
-    return render_template("news/user_news_release.html")
+    if request.method == "GET":
+        return render_template("news/user_news_release.html")
+    else:
+        pass
+
+
 
 
 @user_blueprint.route('/user_news_list')
 @login_verify
 def user_news_list():
-    return render_template("news/user_news_list.html")
+    user_id = session.get("user_id")
+    user = UserInfo.query.get(user_id)
+    print(user_id)
+
+    current_page = request.args.get("current_page")
+
+    news_obj = user.news.order_by(NewsInfo.modTime.desc()).paginate(current_page, 6, False)
+    print(news_obj)
+    news_list = news_obj.items
+    print(news_list)
+    total_page = news_obj.pages
+
+    return render_template("news/user_news_list.html",
+                           current_page =current_page,
+                           news_list = news_list,
+                           total_page = total_page
+                           )
 
 
 
