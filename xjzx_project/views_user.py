@@ -273,7 +273,11 @@ def user_collection():
 def user_news_release():
     if request.method == "GET":
         return render_template("news/user_news_release.html")
-    else:
+    elif request.method == "POST":
+        dict1 = request.form
+
+        dict1.get("")
+
         pass
 
 
