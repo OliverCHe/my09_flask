@@ -15,9 +15,9 @@
                 <li>
                     <a href="/user/user_news_release?news_id={{ news.id }}">{{ news.news_title }}</a>
                     {% if news.varify_status == 1 %}
-                        <em class="pass">已通过</em>
-                    {% elif news.varify_status == 2 %}
                         <em class="review">审核中</em>
+                    {% elif news.varify_status == 2 %}
+                        <em class="pass">已通过</em>
                     {% elif news.varify_status == 3 %}
                         <em class="nopass">未通过</em>
                     {% endif %}

@@ -53,6 +53,7 @@ class NewsInfo(db.Model, BaseModel):
     __tablename__ = 'news_info'
     id = db.Column(db.Integer, primary_key=True)
     news_title = db.Column(db.String(32))
+    news_pic = db.Column(db.String(64))
     news_type = db.Column(db.Integer, db.ForeignKey('news_category.id'))
     news_summary = db.Column(db.String(256))
     news_content = db.Column(db.Text)
@@ -64,6 +65,9 @@ class NewsInfo(db.Model, BaseModel):
 
     comments = db.relationship('NewsComment', backref='news', lazy='dynamic', order_by='NewsComment.id.desc()')
 
+    @property
+    def pic_url(self):
+        return current_app.config.get("QINIU_URL") + self.news_pic
 
 class UserInfo(db.Model,BaseModel):
     __tablename__ = 'user_info'

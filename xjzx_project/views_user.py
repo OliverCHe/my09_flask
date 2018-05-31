@@ -8,7 +8,7 @@ from flask import request
 from utile.captcha.captcha import captcha
 from utile.ytx_sdk.ytx_send import sendTemplateSMS
 
-from models import UserInfo, db, NewsInfo
+from models import UserInfo, db, NewsInfo, NewsCategory
 
 import functools
 from utile.qiniu_xjzx import upload_pic
@@ -271,15 +271,71 @@ def user_collection():
 @user_blueprint.route('/user_news_release', methods=["GET", "POST"])
 @login_verify
 def user_news_release():
+    category_list = NewsCategory.query.all()
+    news_id = request.args.get("news_id")
+
     if request.method == "GET":
-        return render_template("news/user_news_release.html")
+        if news_id is None:
+            return render_template("news/user_news_release.html",
+                                   category_list = category_list,
+                                   news = None
+                                   )
+        else:
+            news = NewsInfo.query.get(news_id)
+
+            return render_template("news/user_news_release.html",
+                                   category_list = category_list,
+                                   news = news
+                                   )
+
     elif request.method == "POST":
         dict1 = request.form
 
-        dict1.get("")
+        title = dict1.get("news_title")
+        category = dict1.get("news_category")
+        summary = dict1.get("news_summary")
+        content = dict1.get("content")
+        pic = request.files.get("news_pic")
 
-        pass
+        if news_id is None:
+            if not all([title,category,summary,pic,content]):
+                return render_template("news/user_news_release.html",
+                                       category_list = category_list,
+                                       error_tip = "请完整填写信息"
+                                       )
+        else:
+            if not all([title,category,summary,content]):
+                return render_template("news/user_news_release.html",
+                                       category_list = category_list,
+                                       error_tip = "请完整填写信息"
+                                       )
 
+        if news_id is None:
+            news = NewsInfo()
+        else:
+            news = NewsInfo.query.get("news_id")
+
+        news.news_title = title
+        news.news_summary = summary
+        news.news_type = category
+        news.news_content = content
+        news.user_id = session.get("user_id")
+
+        if pic:
+            filename = upload_pic(pic)
+            news.news_pic = filename
+
+        try:
+            db.session.add(news)
+            db.session.commit()
+        except:
+            current_app.logger_xjzx.error("用户发布修改新闻写入数据库错误")
+            return render_template("news/user_news_release.html",
+                                   category_list = category_list,
+                                   error_tip = "服务器发生异常"
+                                   )
+
+        return redirect("/user/user_news_list")
 
 
 
