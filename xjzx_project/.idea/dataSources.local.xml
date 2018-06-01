@@ -2,14 +2,16 @@
 <project version="4">
   <component name="dataSourceStorageLocal">
     <data-source name="my09_flask@localhost" uuid="e27f6c4e-b09a-4ad9-9af3-56d7bfd97931">
-      <database-info product="MySQL" version="5.7.22-0ubuntu0.16.04.1" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.46 ( Revision: 9cc87a48e75c2d2e87c1a293b2862ce651cb256e )">
+      <database-info product="MySQL" version="8.0.11" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.44 ( Revision: b3cda4f864902ffdde495b9df93937c3e20009be )">
         <extra-name-characters>#@</extra-name-characters>
         <identifier-quote-string>`</identifier-quote-string>
       </database-info>
-      <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
+      <case-sensitivity plain-identifiers="mixed" quoted-identifiers="upper" />
       <secret-storage>master_key</secret-storage>
       <user-name>root</user-name>
+      <introspection-schemas>*:my09_flask</introspection-schemas>
       <resolve-scope>my09_flask:</resolve-scope>
+      <unqualified-resolve-schemas>my09_flask:</unqualified-resolve-schemas>
     </data-source>
   </component>
 </project>

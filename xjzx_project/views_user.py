@@ -110,7 +110,7 @@ def login():
     if user:
         if user.check_pwd(pwd):
             session["user_id"] = user.id
-            return jsonify(result=3, portrait=user.portrait, nick_name=user.nick_name)
+            return jsonify(result=3, portrait_url=user.portrait_url, nick_name=user.nick_name)
         else:
             return jsonify(result=4)
     else:
@@ -301,13 +301,16 @@ def user_news_release():
             if not all([title,category,summary,pic,content]):
                 return render_template("news/user_news_release.html",
                                        category_list = category_list,
-                                       error_tip = "请完整填写信息"
+                                       error_tip = "请完整填写信息",
+                                       news=None
                                        )
         else:
+            news = NewsInfo.query.get("news_id")
             if not all([title,category,summary,content]):
                 return render_template("news/user_news_release.html",
                                        category_list = category_list,
-                                       error_tip = "请完整填写信息"
+                                       error_tip = "请完整填写信息",
+                                       news = news
                                        )
 
         if news_id is None:

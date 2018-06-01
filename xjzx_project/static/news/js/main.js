@@ -130,7 +130,7 @@ $(function(){
                 $(".user_btns").hide();
                 $(".user_login").show();
                 $(".login_form_con").hide();
-                $(".lgin_pic").attr("src", "/static/news/images/" + data.portrait);
+                $(".lgin_pic").attr("src", data.portrait_url);
                 $("#login_name").text(data.nick_name);
             }
             else if(data.result == 2){
