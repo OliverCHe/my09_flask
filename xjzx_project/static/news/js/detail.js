@@ -8,19 +8,51 @@ $(function(){
 
     // 收藏
     $(".collection").click(function () {
-
+        $.post("/collect/" + $("#news_id").val(), {
+            "csrf_token": $("#csrf_token").val(),
+            "action": 1
+        }, function (data) {
+            if (data.result == 2){
+                $('.login_btn').click();
+            }
+            else if(data.result == 3){
+                $(".collected").show();
+                $(".collection").hide();
+            }
+        })
        
     })
 
     // 取消收藏
     $(".collected").click(function () {
+        $.post("/collect/" + $("#news_id").val(), {
+            "csrf_token": $("#csrf_token").val(),
+            "action": 2
+        }, function (data) {
 
+            if (data.result == 3){
+                $(".collected").hide();
+                $(".collection").show();
+            }
+        })
      
     })
 
         // 评论提交
     $(".comment_form").submit(function (e) {
         e.preventDefault();
+
+        $.post("/comment/add", {
+            "csrf_token": $("#csrf_token").val(),
+            "comment_content": $(".comment_input").val(),
+            "news_id": $("#news_id").val()
+        }, function (data) {
+            if (data.result == 4){
+                $(".comment_input").val('');
+                $(".comment").text(data.comment_count);
+                $(".comment_count span").text(data.comment_count);
+            }
+        })
 
     })
 
@@ -65,4 +97,24 @@ $(function(){
     $(".focused").click(function () {
 
     })
+    
+    vue_comment_list = new Vue({
+        el:".comment_list_con",
+        delimiters:["[[", "]]"],
+        data:{
+            comment_list: []
+        }
+    })
+    load_comment();
 })
+
+
+function load_comment() {
+    $.get("/comment/list/" + $("#news_id").val(), {
+
+    }, function (data) {
+        if(data.result == 2){
+            vue_comment_list.comment_list = data.comment_list
+        }
+    })
+}

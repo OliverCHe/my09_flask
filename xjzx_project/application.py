@@ -1,8 +1,11 @@
-from flask import Flask
+from flask import Flask, render_template, session
+
+from models import UserInfo
 from views_news import news_blueprint
 from views_user import user_blueprint
 from views_admin import admin_blueprint
 from flask_wtf import CSRFProtect
+import re
 # 引入python自带的日志包
 import logging
 from logging.handlers import RotatingFileHandler
@@ -30,4 +33,20 @@ def create_app(Config):
     logging.getLogger().addHandler(file_log_handler)
     app.logger_xjzx = logging
 
+
+    @app.errorhandler(404)
+    def handler404(e):
+        if "user_id" in session:
+            user = UserInfo.query.get(session.get("user_id"))
+        else:
+            user = None
+        return render_template("news/404.html", user=user)
+
+
+    app.add_template_filter(first_title, 'first_title')
+
     return app
+
+
+def first_title(str):
+    return re.match(r"[^ ]*$", str).group()

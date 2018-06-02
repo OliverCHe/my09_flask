@@ -31,14 +31,15 @@
                     <div class="time fl">[[ news.modTime ]]</div>
                 </div>
             </li>
-        </ul>>
+        </ul>
         <div class="rank_con fr">
             <div class="rank_title">
                 <h3>点击排行</h3>
             </div>
             <ul class="rank_list">
                 {% for news in count_list %}
-                    <li><span class="rank{{ loop.index }}">{{ loop.index }}</span><a href="/{{ news.id }}">{{ news.news_title }}</a></li>
+                    <li><span class="rank{{ loop.index }}">{{ loop.index }}</span><a
+                            href="/{{ news.id }}">{{ news.news_title }}</a></li>
                 {% endfor %}
             </ul>
         </div>

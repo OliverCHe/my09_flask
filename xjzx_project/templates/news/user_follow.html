@@ -5,32 +5,32 @@
     <script type="text/javascript" src="/static/news/js/user_follow.js"></script>
 </head>
 <body class="inframe_body">
-        <h3 class="common_title">我的关注</h3>
-        <ul class="card_list_con">
-            {% for user in follow_list %}
-            <li class="author_card card_list">
-                <a href="#" target="_blank" class="author_pic"><img src="{{ user.portrait_url }}" alt="author_pic"></a>
-                <a href="#" target="_blank" class="author_name">{{ user.nick_name }}</a>
-                <div class="author_resume">{{ user.signature }}</div>
-                <div class="writings"><span>总篇数</span><b>{{ user.public_count }}</b></div>
-                <div class="follows"><span>粉丝</span><b>{{ user.fans_count }}</b></div>
-{#                <a href="javascript:;" class="focus fr">关注</a>#}
-                <a href="javascript:;" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
-            </li>
-            {% endfor %}
-        </ul>
-        
-        <div id="pagination" class="page"></div>
-        <script>
-            $(function() {
-                $("#pagination").pagination({
-                    currentPage: {{ current_page }},
-                    totalPage: {{ total_page }},
-                    callback: function(current) {
-                        location.href="?current_page="+ current;
-                    }
-                });
-            });
-        </script>
+<h3 class="common_title">我的关注</h3>
+<ul class="card_list_con">
+    {% for user in follow_list %}
+        <li class="author_card card_list">
+            <a href="#" target="_blank" class="author_pic"><img src="{{ user.portrait_url }}" alt="author_pic"></a>
+            <a href="#" target="_blank" class="author_name">{{ user.nick_name }}</a>
+            <div class="author_resume">{{ user.signature }}</div>
+            <div class="writings"><span>总篇数</span><b>{{ user.public_count }}</b></div>
+            <div class="follows"><span>粉丝</span><b>{{ user.fans_count }}</b></div>
+            {#                <a href="javascript:;" class="focus fr">关注</a>#}
+            <a href="javascript:;" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
+        </li>
+    {% endfor %}
+</ul>
+
+<div id="pagination" class="page"></div>
+<script>
+    $(function () {
+        $("#pagination").pagination({
+            currentPage: {{ current_page }},
+            totalPage: {{ total_page }},
+            callback: function (current) {
+                location.href = "?current_page=" + current;
+            }
+        });
+    });
+</script>
 </body>
 </html>

@@ -13,8 +13,7 @@ from models import UserInfo, db, NewsInfo, NewsCategory
 import functools
 from utile.qiniu_xjzx import upload_pic
 
-
-user_blueprint=Blueprint('user',__name__,url_prefix='/user')
+user_blueprint = Blueprint('user', __name__, url_prefix='/user')
 
 
 @user_blueprint.route('/imagecode')
@@ -38,8 +37,7 @@ def smscode():
         return jsonify(result=2)
 
     sms_code = random.randint(1000, 9999)
-    session['sms_code'] =  sms_code
-
+    session['sms_code'] = sms_code
 
     try:
         # sendTemplateSMS(mobile, [sms_code, "5"], 1)
@@ -55,7 +53,6 @@ def smscode():
 def mobile():
     if not UserInfo.query.filter_by(mobile=mobile).first():
         return jsonify(result=1)
-
 
 
 @user_blueprint.route('/register', methods=['POST'])
@@ -90,7 +87,6 @@ def register():
         current_app.logger_xjzx.error('注册用户时数据库访问失败')
         return jsonify(result=6)
 
-
     return jsonify(result=7)
 
 
@@ -117,7 +113,6 @@ def login():
         return jsonify(result=2)
 
 
-
 @user_blueprint.route('/logout', methods=["POST"])
 def logout():
     session.pop("user_id")
@@ -131,8 +126,8 @@ def login_verify(view_func):
         if "user_id" not in session:
             return redirect("/")
         return view_func(*args, **kwargs)
-    return inner_func
 
+    return inner_func
 
 
 @user_blueprint.route('/')
@@ -173,7 +168,6 @@ def user_base_info():
         return jsonify(result=1)
 
 
-
 @user_blueprint.route('/user_pic_info', methods=["GET", "POST"])
 @login_verify
 def user_pic_info():
@@ -182,7 +176,7 @@ def user_pic_info():
 
     if request.method == 'GET':
         return render_template('news/user_pic_info.html', user=user)
-    elif request.method=='POST':
+    elif request.method == 'POST':
         f1 = request.files.get("portrait")
         f1_name = upload_pic(f1)
         print(f1_name)
@@ -190,8 +184,7 @@ def user_pic_info():
 
         db.session.commit()
 
-
-        return jsonify(result=1, portrait_url = user.portrait_url)
+        return jsonify(result=1, portrait_url=user.portrait_url)
 
 
 @user_blueprint.route('/user_follow')
@@ -208,9 +201,9 @@ def user_follow():
     total_page = follow_obj.pages
 
     return render_template("news/user_follow.html",
-                           follow_list = follow_list,
-                           total_page = total_page,
-                           current_page = current_page
+                           follow_list=follow_list,
+                           total_page=total_page,
+                           current_page=current_page
                            )
 
 
@@ -225,7 +218,7 @@ def user_pass_info():
         new_pwd = dict1.get("new_pwd")
         confirm_pwd = dict1.get("confirm_pwd")
 
-        if not all([current_pwd,new_pwd,confirm_pwd]):
+        if not all([current_pwd, new_pwd, confirm_pwd]):
             return render_template("news/user_pass_info.html", error_tip="输入框不能有空")
 
         if not re.match(r'[a-zA-Z0-9_]{6,20}', current_pwd):
@@ -259,7 +252,7 @@ def user_collection():
 
     news_list = paginate_obj.items
 
-    total_page =paginate_obj.pages
+    total_page = paginate_obj.pages
 
     return render_template("news/user_collection.html",
                            news_list=news_list,
@@ -277,15 +270,15 @@ def user_news_release():
     if request.method == "GET":
         if news_id is None:
             return render_template("news/user_news_release.html",
-                                   category_list = category_list,
-                                   news = None
+                                   category_list=category_list,
+                                   news=None
                                    )
         else:
             news = NewsInfo.query.get(news_id)
 
             return render_template("news/user_news_release.html",
-                                   category_list = category_list,
-                                   news = news
+                                   category_list=category_list,
+                                   news=news
                                    )
 
     elif request.method == "POST":
@@ -298,19 +291,19 @@ def user_news_release():
         pic = request.files.get("news_pic")
 
         if news_id is None:
-            if not all([title,category,summary,pic,content]):
+            if not all([title, category, summary, pic, content]):
                 return render_template("news/user_news_release.html",
-                                       category_list = category_list,
-                                       error_tip = "请完整填写信息",
+                                       category_list=category_list,
+                                       error_tip="请完整填写信息",
                                        news=None
                                        )
         else:
             news = NewsInfo.query.get("news_id")
-            if not all([title,category,summary,content]):
+            if not all([title, category, summary, content]):
                 return render_template("news/user_news_release.html",
-                                       category_list = category_list,
-                                       error_tip = "请完整填写信息",
-                                       news = news
+                                       category_list=category_list,
+                                       error_tip="请完整填写信息",
+                                       news=news
                                        )
 
         if news_id is None:
@@ -334,12 +327,11 @@ def user_news_release():
         except:
             current_app.logger_xjzx.error("用户发布修改新闻写入数据库错误")
             return render_template("news/user_news_release.html",
-                                   category_list = category_list,
-                                   error_tip = "服务器发生异常"
+                                   category_list=category_list,
+                                   error_tip="服务器发生异常"
                                    )
 
         return redirect("/user/user_news_list")
-
 
 
 @user_blueprint.route('/user_news_list')
@@ -358,10 +350,7 @@ def user_news_list():
     total_page = news_obj.pages
 
     return render_template("news/user_news_list.html",
-                           current_page =current_page,
-                           news_list = news_list,
-                           total_page = total_page
+                           current_page=current_page,
+                           news_list=news_list,
+                           total_page=total_page
                            )
-
-
-
