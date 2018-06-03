@@ -29,7 +29,7 @@
                 {% if user.id != news.user.id %}
                     {% if news in user.news_collect %}
                         <a href="javascript:;" class="collection block-center" style="display: none">收藏</a>
-                        <a href="javascript:;" class="collected block-center" >
+                        <a href="javascript:;" class="collected block-center">
                             <span class="out">已收藏</span>
                             <span class="over">取消收藏</span></a>
                     {% else %}
@@ -74,18 +74,19 @@
                     <div class="comment_text fl">
                         [[ comment.content ]]
                     </div>
-                    <div class="reply_text_con fl">
-                        <div class="user_name2">用户李思</div>
+                    <div class="reply_text_con fl" v-for="commentback in comment.commentback_list">
+                        <div class="user_name2">[[ commentback.nick_name ]]</div>
                         <div class="reply_text">
-                            遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。
+                            [[ commentback.back ]]
                         </div>
                     </div>
                     <div class="comment_time fl">[[ comment.create_time ]]</div>
-                    <a href="javascript:;" class="comment_up has_comment_up fr">[[ comment.nice_count ]]</a>
+                    <a href="javascript:;" class="comment_up has_comment_up fr" v-if="comment.is_like == 1" :commentid="comment.id">赞 <em>[[ comment.nice_count ]]</em></a>
+                    <a href="javascript:;" class="comment_up fr" v-else :commentid="comment.id">赞 <em>[[ comment.nice_count ]]</em></a>
                     <a href="javascript:;" class="comment_reply fr">回复</a>
                     <from class="reply_form fl">
                         <textarea class="reply_input"></textarea>
-                        <input type="submit" name="" value="回复" class="reply_sub fr">
+                        <input type="submit" name="" value="回复" class="reply_sub fr" :commentid="comment.id">
                         <input type="reset" name="" value="取消" class="reply_cancel fr">
                     </from>
                 </div>

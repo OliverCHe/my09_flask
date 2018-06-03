@@ -10,6 +10,8 @@ import re
 import logging
 from logging.handlers import RotatingFileHandler
 
+import redis
+
 def create_app(Config):
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -32,6 +34,12 @@ def create_app(Config):
     # 为全局的日志工具对象（flask app使用的）添加日志记录器
     logging.getLogger().addHandler(file_log_handler)
     app.logger_xjzx = logging
+
+    redis_host = app.config.get("REDIS_HOST")
+    redis_port = app.config.get("REDIS_PORT")
+    redis_db = app.config.get("REDIS_DB")
+
+    app.redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
 
 
     @app.errorhandler(404)

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify, request, abort, current_app
 from flask import render_template
 
 # 如果希望用户直接访问，则不添加前缀
@@ -134,6 +134,7 @@ def comment_add():
     comment.news_id = news_id
     comment.user_id = user.id
     comment.comment_content = comment_content
+    print(news.comment_count)
     news.comment_count += 1
 
     db.session.add(comment)
@@ -150,20 +151,95 @@ def comment_list(news_id):
     if news is None:
         return jsonify(result=1)
 
-    comment_list = news.comments.order_by(NewsComment.modTime.desc(), NewsComment.nice_count.desc())
+    if "user_id" in session:
+        user_id = session.get("user_id")
+
+        commentid_list = current_app.redis_client.lrange('commentup%d' % user_id, 0, -1)
+        commentid_list = [int(cid) for cid in commentid_list]
+    else:
+        commentid_list = []
+
+    comment_list = news.comments.filter_by(comment_id=None).order_by(NewsComment.modTime.desc(), NewsComment.nice_count.desc())
 
     comment_list2 = []
 
     for comment in comment_list:
+        # 查看当前用户是否已经给某个评论点赞
+        if comment.id in commentid_list:
+            is_like = 1
+        else:
+            is_like = 0
+
         dict1 = {
             "id": comment.id,
             "content": comment.comment_content,
             "create_time": comment.createTime,
             "nice_count": comment.nice_count,
             "nick_name": comment.user.nick_name,
-            "portrait_url": comment.user.portrait_url
+            "portrait_url": comment.user.portrait_url,
+            "is_like": is_like
         }
+
+        commentback_list = []
+        for back in comment.comments:
+            commentback_dict = {
+                "nick_name": back.user.nick_name,
+                "back": back.comment_content
+            }
+            commentback_list.append(commentback_dict)
+
+        dict1["commentback_list"] = commentback_list
 
         comment_list2.append(dict1)
 
     return jsonify(result=2, comment_list=comment_list2)
+
+
+
+@news_blueprint.route('/commentback/<int:comment_id>', methods=["POST"])
+def commentback(comment_id):
+    news_id = request.form.get("news_id")
+    comment_content = request.form.get("comment_content")
+    # comment_id = request.form.get("comment_id")
+
+    if not all([comment_content]):
+        return jsonify(result=2)
+
+    if 'user_id' not in session:
+        return jsonify(result=3)
+
+    comment = NewsComment()
+    comment.news_id = news_id
+    comment.user_id = session.get('user_id')
+    comment.comment_content = comment_content
+    comment.comment_id = comment_id
+
+    db.session.add(comment)
+    db.session.commit()
+
+    return  jsonify(result=1)
+
+
+@news_blueprint.route('/commentup/<int:comment_id>', methods=["POST"])
+def commentup(comment_id):
+    action = int(request.form.get("action"))
+
+    comment = NewsComment.query.get(comment_id)
+
+    if 'user_id' not in session:
+        return jsonify(result=3)
+
+    if comment is None:
+        return jsonify(result=2)
+
+    if action == 1:
+        comment.nice_count += 1
+        current_app.redis_client.rpush("commentup%d" % session.get("user_id"), comment_id)
+
+    else:
+        comment.nice_count -= 1
+        current_app.redis_client.lrem("commentup%d" % session.get("user_id"), 0, comment_id)
+
+    db.session.commit()
+
+    return jsonify(result=1, nice_count=comment.nice_count)
