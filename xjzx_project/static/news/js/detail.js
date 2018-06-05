@@ -144,12 +144,35 @@ $(function(){
 
         // 关注当前新闻作者
     $(".focus").click(function () {
-
+        $.post("/userfollow", {
+            "follow_user_id": $("#news_user_id").val(),
+            "csrf_token": $("#csrf_token").val(),
+            "action": 1
+        }, function (data) {
+            if(data.result == 2){
+                $('.login_btn').click();
+            }
+            else if(data.result == 1){
+                $(".focus").hide();
+                $(".focused").show();
+                $(".follows b").text(data.fans_count);
+            }
+        })
     })
 
     // 取消关注当前新闻作者
     $(".focused").click(function () {
-
+        $.post("/userfollow", {
+            "follow_user_id": $("#news_user_id").val(),
+            "csrf_token": $("#csrf_token").val(),
+            "action": 2
+        }, function (data) {
+            if(data.result == 1){
+                $(".focus").show();
+                $(".focused").hide();
+                $(".follows b").text(data.fans_count);
+            }
+        })
     });
 })
 

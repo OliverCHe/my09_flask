@@ -1,6 +1,8 @@
 import random
 
 import re
+from datetime import datetime
+
 from flask import Blueprint, render_template, session, make_response, jsonify, redirect
 from flask import current_app
 from flask import request
@@ -90,6 +92,26 @@ def register():
     return jsonify(result=7)
 
 
+def login_hour_count():
+    now = datetime.now()
+
+    key = "login%d_%d_%d" % (now.year, now.month, now.day)
+    field_list = ['08:15', '09:15', '10:15', '11:15', '12:15', '13:15', '14:15', '15:15', '16:15', '17:15', '18:15', '19:15']
+
+    for index, field in enumerate(field_list):
+        if now.hour < index + 8 or (now.hour == index + 8 and now.minute <= 15):
+            count = int(current_app.redis_client.hget(key, field))
+            count += 1
+            current_app.redis_client.hset(key, field, count)
+            break
+
+    if now.hour >= 19 and now.minute >= 15:
+        count = int(current_app.redis_client.hget(key, '19:15'))
+        count += 1
+        current_app.redis_client.hset(key, '19:15', count)
+
+
+
 @user_blueprint.route('/login', methods=['POST'])
 def login():
     log_dict = request.form
@@ -99,6 +121,7 @@ def login():
     if not all([mobile, pwd]):
         return jsonify(result=1)
 
+    now = datetime.now()
     user = UserInfo.query.filter_by(mobile=mobile).first()
     # print(user.mobile)
     # print(user.password_hash)
@@ -106,6 +129,9 @@ def login():
     if user:
         if user.check_pwd(pwd):
             session["user_id"] = user.id
+            user.modTime = now
+            db.session.commit()
+            login_hour_count()
             return jsonify(result=3, portrait_url=user.portrait_url, nick_name=user.nick_name)
         else:
             return jsonify(result=4)

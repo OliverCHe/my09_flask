@@ -243,3 +243,28 @@ def commentup(comment_id):
     db.session.commit()
 
     return jsonify(result=1, nice_count=comment.nice_count)
+
+
+@news_blueprint.route('/userfollow', methods=["POST"])
+def userfollow():
+    action = int(request.form.get("action"))
+    follow_user_id = request.form.get("follow_user_id")
+    follow_user = UserInfo.query.get(follow_user_id)
+
+    if "user_id" not in session:
+        return jsonify(result=2)
+
+    login_user_id = session.get("user_id")
+    login_user = UserInfo.query.get(login_user_id)
+
+    if action == 1:
+        login_user.follow_user.append(follow_user)
+        follow_user.fans_count += 1
+
+    elif action == 2:
+        login_user.follow_user.remove(follow_user)
+        follow_user.fans_count -= 1
+
+    db.session.commit()
+
+    return jsonify(result=1, fans_count=follow_user.fans_count)
