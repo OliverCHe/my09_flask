@@ -100,8 +100,11 @@ def login_hour_count():
 
     for index, field in enumerate(field_list):
         if now.hour < index + 8 or (now.hour == index + 8 and now.minute <= 15):
-            count = int(current_app.redis_client.hget(key, field))
-            count += 1
+            if current_app.redis_client.hget(key, field) is None:
+                count = 1
+            else:
+                count = int(current_app.redis_client.hget(key, field))
+                count += 1
             current_app.redis_client.hset(key, field, count)
             break
 

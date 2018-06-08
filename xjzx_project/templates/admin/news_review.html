@@ -2,64 +2,96 @@
 <html lang="en">
 <head>
     {% include "admin/head.html" %}
-	<link rel="stylesheet" href="/static/admin/css/jquery.pagination.css">
-	<script type="text/javascript" src="/static/admin/js/jquery-1.12.4.min.js"></script>
-	<script type="text/javascript" src="/static/admin/js/jquery.pagination.min.js"></script>
 </head>
 <body>
-	<div class="breadcrub">
-			当前位置：新闻管理>新闻审核
-			<form class="news_filter_form">
-				<input type="text" placeholder="请输入关键字" class="input_txt">
-				<input type="submit" value="搜 索" class="input_sub">
-			</form>
-		</div>
-		<div class="pannel">
-			<table class="common_table">
-				<tr>
-					<th width="3%">id</th>
-					<th width="70%">标题</th>
-					<th width="15%">发布时间</th>
-					<th width="5%">状态</th>
-					<th width="8%">管理操作</th>
-				</tr>
+<div class="breadcrub">
+    当前位置：新闻管理>新闻审核
+    <form class="news_filter_form">
+        <input type="text" placeholder="请输入关键字" class="input_txt">
+        <input type="submit" value="搜 索" class="input_sub">
+    </form>
+</div>
+<div class="pannel">
+    <table class="common_table">
+        <tr>
+            <th width="3%">id</th>
+            <th width="70%">标题</th>
+            <th width="15%">发布时间</th>
+            <th width="5%">状态</th>
+            <th width="8%">管理操作</th>
+        </tr>
 
-                {% for news in all_news_list %}
-				<tr>
-					<td>{{ news.id }}</td>
-					<td class="tleft">{{ news.news_title }}</td>
-					<td>{{ news.modTime }}</td>
-					{% if news.varify_status==1 %}
-                        <td>未审核</td>
-                    {% elif news.varify_status==2 %}
-                        <td>已通过</td>
-                    {% elif news.varify_status==3 %}
-                        <td>未通过</td>
-                    {% endif %}
-					<td>
-						<a href="/admin/news_review/{{ news.id }}" class="review">审核</a>
-					</td>
-				</tr>
-                {% endfor %}
-			</table>
-		</div>
+        {#                {% for news in all_news_list %}#}
+        <tr v-for="news in news_list">
+            <td>[[ news.id ]]</td>
+            <td class="tleft">[[ news.title ]]</td>
+            <td>[[ news.modTime ]]</td>
+            {#					{% if news.varify_status==1 %}#}
+            <td v-if="news.status==1">未审核</td>
+            {#                    {% elif news.varify_status==2 %}#}
+            <td v-else-if="news.status==2">已通过</td>
+            {#                    {% elif news.varify_status==3 %}#}
+            <td v-else>未通过</td>
+            {#                    {% endif %}#}
+            <td>
+                <a :href="'/admin/news_review/' + news.id" class="review">审核</a>
+            </td>
+        </tr>
+        {#                {% endfor %}#}
+    </table>
+</div>
 
-		<div class="box">
-			<div id="pagination" class="page"></div>
-		</div>
+<div class="box">
+    <div id="pagination" class="page"></div>
+</div>
 
-        <script>
-			$(function() {
-				$("#pagination").pagination({
-					currentPage: {{ page }},
-					totalPage: {{ total_page }},
-					callback: function(current) {
-					    location.href = '?page=' + current
-					}
-				});
-			});
-		</script>
+<script>
+    input_text = "";
+    $(function () {
+        vue_news_review = new Vue({
+            el: ".common_table",
+            delimiters: ["[[", "]]"],
+            data: {
+                news_list: []
+            }
+        });
 
-	
+        get_news_list();
+        
+        $(".news_filter_form").submit(function (e) {
+            // e就是当前标签对象
+            e.preventDefault();
+            input_text = $(".input_txt").val();
+            get_news_list();
+            {#alert("111")#}
+        })
+
+
+    });
+
+    function get_news_list() {
+        $.get("/admin/news_review_ajax", {
+            "input_text": input_text
+        }, function (data) {
+            vue_news_review.news_list = data.news_list;
+
+            $("#pagination").pagination({
+                currentPage: 1,
+                totalPage: data.total_page,
+                callback: function (current) {
+                    $.get("/admin/news_review_ajax", {
+                        "page": current,
+                        "input_text": input_text    // 要带上input_text 这样在切换页数的时候才能带着搜索条件取数据
+                    }, function (data) {
+                        vue_news_review.news_list = data.news_list;
+                    });
+                }
+            });
+        });
+    }
+
+</script>
+
+
 </body>
 </html>
