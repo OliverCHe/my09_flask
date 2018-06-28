@@ -3,7 +3,7 @@ import os
 
 class Config(object):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'mysql://name:password@host:port/database'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:mysql@localhost/my09_flask'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     # redis配置
     REDIS_HOST = "localhost"

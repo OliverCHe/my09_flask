@@ -259,7 +259,7 @@ def news_type_list():
 
 
 @admin_blueprint.route('/news_type_add', methods=["POST"])
-def news_type():
+def news_type_add():
     name = request.form.get('name')
 
     if NewsCategory.query.filter_by(type_name=name).count():

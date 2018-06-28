@@ -42,8 +42,8 @@ def smscode():
     session['sms_code'] = sms_code
 
     try:
-        # sendTemplateSMS(mobile, [sms_code, "5"], 1)
-        print(sms_code)
+        sendTemplateSMS(mobile, [sms_code, "5"], 1)
+        # print(sms_code)
     except:
         current_app.logger_xjzx.error("用户注册时发送短信失败")
         return jsonify(result=3)

@@ -1,12 +1,12 @@
 from flask_script import Manager
 from application import create_app
-from config import DevelopmentConfig
+from config import DevelopmentConfig, Config
 from flask_migrate import MigrateCommand, Migrate
 from models import db
 from flask_session import Session
 from admin_command import CreateAdminCommand, RegisterUserCommand, HourLoginCommand
 
-app = create_app(DevelopmentConfig)
+app = create_app(Config)
 
 manager = Manager(app)
 
